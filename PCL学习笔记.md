@@ -14,7 +14,7 @@ PCL中对3D点云的处理包括：滤波，特征估计，表面重构，模型
 3.调参 <br>
 4.计算得到输出 <br>
 5.将原始输入和计算的结果一起传输到FPFH估计对象中 <br>
-<img src='image/1.jpg' /width="50%"height="50%">
+<img src='image/1.jpg' width="60%" height="60%">
 <br>
 **PCL的各个库以及作用：** <br>
 1. libpcl_filters: 对数据进行过滤，例如下采样，去除离群点，标记提取 <br>
