@@ -26,7 +26,7 @@ PCL中对3D点云的处理包括：滤波，特征估计，表面重构，模型
 7. libpcl_keypoints: 包含实现各种关键点提取方法，关键点是用于提取特征前的预处理部分 <br>
 8. libpcl_range_image: 实现了对从点云数据集创建的范围图像的支持  <br>
 <br>
-**PCL和ROS**  <br>
+**PCL和ROS** <br>
 perception processing graph（PPG）：感知图像处理 <br>
 1. ROS：是最近的三维视觉处理库 <br>
 2. PCL：基于ROS库中获得的经验，PCL中的每个算法都以独立构建的模块提供，每个模块都创建一个procssing graphs，这就想ROS系统中一个一个连接起来的节点。 <br>
