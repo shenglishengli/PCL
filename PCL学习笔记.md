@@ -32,18 +32,21 @@ perception processing graph（PPG）：感知图像处理 <br>
 1. ROS：是最近的三维视觉处理库 <br>
 2. PCL：基于ROS库中获得的经验，PCL中的每个算法都以独立构建的模块提供，每个模块都创建一个procssing graphs，这就想ROS系统中一个一个连接起来的节点。 <br>
 3. nodelets：是PCL中动态可加载的插件，操作起来类似ROS中的节点，作用是避免不必要数据的复制或序列化/反序列化。 <br>
-<br> 
-**PCL的可视化：**  <br>
+<br>
+
+**PCL的可视化**  
 PCL的点云可视化是基于VTK。VTK为渲染三维点云和表面数据提供了强大的多平台支持，包括对张量、纹理和体积方法的可视化支持。 <br>
 <br>
-**PCL的可视化库可以提供以下功能：** <br>
+
+**PCL的可视化库可以提供以下功能**  
 1. 为n维数据提供渲染方法 <br>
 2. 提供绘制基本三维形状的方法 <br>
 3. 为2维图提供histogram visualization module <br>
 4. 提供大量的几何图形和颜色处理程序。 <br>
 5. 提供rangeimage 可视化模块。 <br>
  <br>
-**PCL的使用实例：**  <br>
+ 
+**PCL的使用实例**  
 1. 导航和建图 <br>
 2. 目标物识别 <br>
 3. 操作和抓取 <br>
