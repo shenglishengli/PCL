@@ -54,7 +54,7 @@ PCL的点云可视化是基于VTK。VTK为渲染三维点云和表面数据提�
 # Linux安装PCL  
 **PCL官网下载地址**
 https://pointclouds.org/downloads/  
-**PCL官网安装教程**
+**PCL官网Linux下安装教程**
 https://pcl.readthedocs.io/projects/tutorials/en/master/compiling_pcl_posix.html#compiling-pcl-posix
 
 
