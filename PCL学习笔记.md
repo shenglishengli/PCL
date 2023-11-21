@@ -52,10 +52,62 @@ PCL的点云可视化是基于VTK。VTK为渲染三维点云和表面数据提�
 3. 操作和抓取 <br>
 
 # Linux安装PCL  
+**环境**Oracle VM VirtualBox下安装ubuntu
 **PCL官网下载地址**
 https://pointclouds.org/downloads/  
 **PCL官网Linux下安装教程**
-https://pcl.readthedocs.io/projects/tutorials/en/master/compiling_pcl_posix.html#compiling-pcl-posix
+https://pcl.readthedocs.io/projects/tutorials/en/master/compiling_pcl_posix.html#compiling-pcl-posix  
+```git
+git clone https://github.com/PointCloudLibrary/pcl.git
+cd pcl
+mkdir build
+cd build
+cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j2
+```
+如果cmake ..失败，是因为还需要下载依赖库
+```git
+sudo apt install git cmake libboost-all-dev libeigen3-dev libflann-dev libvtk7-dev libqhull-dev
+```
+如果安装libvtk7-dev出现下列错误时，安装libvtk7-jni即可
+```git
+$ sudo apt install libvtk7-dev
+Reading package lists... Done
+......
+The following packages have unmet dependencies:
+ libvtk7-dev : Depends: libvtk7-java (= 7.1.1+dfsg1-2) but it is not going to be installed
+E: Unable to correct problems, you have held broken packages.
+
+$ sudo apt install libvtk7-java
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+... ...
+The following packages have unmet dependencies:
+ libvtk7-java : Depends: libvtk7-jni (= 7.1.1+dfsg1-2) but it is not going to be installed
+E: Unable to correct problems, you have held broken packages.
+
+$ sudo apt install libvtk7-jni
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  libqt5x11extras5 libvtk7.1 libvtk7.1-qt
+Suggested packages:
+  vtk7-doc vtk7-examples
+The following packages will be REMOVED:
+  libpcl-dev libvtk6-dev libvtk6-java libvtk6-jni libvtk6-qt-dev
+The following NEW packages will be installed:
+  libqt5x11extras5 libvtk7-jni libvtk7.1 libvtk7.1-qt
+0 upgraded, 4 newly installed, 5 to remove and 0 not upgraded.
+Need to get 38.6 MB of archives.
+After this operation, 127 MB of additional disk space will be used.
+Do you want to continue? [Y/n] y
+......
+Setting up libvtk7-jni (7.1.1+dfsg1-2) ...
+Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
+```
 
 
 
