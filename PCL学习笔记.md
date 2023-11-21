@@ -65,6 +65,7 @@ cd build
 cmake ..
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
+make -j2 install
 ```
 如果cmake ..失败，是因为还需要下载依赖库
 ```git
