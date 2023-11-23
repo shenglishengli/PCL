@@ -112,8 +112,10 @@ Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
 
 # Linux下使用PCL  
 **使用pcl viewer工具**  
+下载官网数据https://github.com/PointCloudLibrary/data
+使用pcl_viewer查看.pcd文件
 ```git
-pcl_virewer xxxx.pcd
+pcl_viewer xxxx.pcd
 ```
 
 
