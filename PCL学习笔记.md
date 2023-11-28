@@ -139,7 +139,10 @@ pcl_pcd2ply input.pcd output.ply
 ```
 7. pcl_mesh2pcd ：将CAD文件转为pcd文件
 8. pcl_octree_viewer：可视化octree
-
+```git
+octree_viewer <file_name.pcd> <octree resolution>
+```
+**PCL中的基础数据结构**   
 
 
 
