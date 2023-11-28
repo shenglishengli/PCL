@@ -118,8 +118,37 @@ Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
 pcl_viewer xxxx.pcd
 ```
 2. pcl_pcd_convert_NaN_nan：将pcd中的NaN值转为nan
-3. 
+```git
+pcl_pcd_convert_NaN_nan input.pcd output.pcd
+```
+3. pcl_convert_pcd_ascii_binary:将pcd文件从ASCII码转为二进制文件或者二进制压缩文件
+```git
+pcl_convert_pcd_ascii_binary <file_in.pcd> <file_out.pcd> 0/1/2 (ascii/binary/binary_compressed) [precision (ASCII)]
+```
+4. pcl_concatenate_points_pcd ： 将两个或多个PCD文件的点放到到单个PCD文件中
+```git
+pcl_concatenate_points_pcd <filename 1..N.pcd>
+```   
+5. pcl_pcd2vtk： 将pcd文件转为vtk文件
+```git
+pcl_pcd2vtk input.pcd output.vtk
+```
+6. pcl_pcd2ply： 将pcd文件转为ply文件
+```git
+pcl_pcd2ply input.pcd output.ply
+```
+7. pcl_mesh2pcd ：将CAD文件转为pcd文件
+8. pcl_octree_viewer：可视化octree
 
 
 
 
+
+
+
+
+
+
+
+
+   
