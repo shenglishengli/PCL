@@ -111,12 +111,14 @@ Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
 ```
 
 # Linux下使用PCL  
-**使用pcl viewer工具**  
+**使用Binaries**  
 下载官网数据https://github.com/PointCloudLibrary/data  
-使用pcl_viewer查看.pcd文件
+1. 使用pcl_viewer查看.pcd文件
 ```git
 pcl_viewer xxxx.pcd
 ```
+2. pcl_pcd_convert_NaN_nan：将pcd中的NaN值转为nan
+3. 
 
 
 
