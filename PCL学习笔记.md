@@ -143,6 +143,12 @@ pcl_pcd2ply input.pcd output.ply
 octree_viewer <file_name.pcd> <octree resolution>
 ```
 **PCL中的基础数据结构**   
+1. width :
+2. height ：
+3. points ：
+4. is_dense :
+5. sensor_origin_ :
+6. sensor_orientation : 
 
 
 
