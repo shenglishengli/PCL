@@ -143,12 +143,16 @@ pcl_pcd2ply input.pcd output.ply
 octree_viewer <file_name.pcd> <octree resolution>
 ```
 **PCL中的基础数据结构**   
-1. width :
-2. height ：
-3. points ：
-4. is_dense :
-5. sensor_origin_ :
-6. sensor_orientation : 
+1. width : width*height=point的个数
+2. height ：height=1表示point cloud为无组织的
+3. points ：pcl::PointCloud<pcl::PointXYZ>数据类型等价于std::vector<pcl::PointXYZ>
+```git
+pcl::PointCloud<pcl::PointXYZ> cloud;
+std::vector<pcl::PointXYZ> data = cloud.points;
+``` 
+4. is_dense : 当point的值为非nan时is_dense=true，当point的值为nan时is_dense=false
+5. sensor_origin_ : sensor的平移信息
+6. sensor_orientation : sensor的旋转信息
 
 
 
