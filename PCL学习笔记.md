@@ -199,14 +199,14 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(pcd_write pcd_write.cpp)
 target_link_libraries(pcd_write ${PCL_LIBRARIES})
 ```
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR) ：cmake的版本不能低于3.5 否则报错
-project(pcd_write) ：最终生成的可执行文件叫pcd_write
-find_package(PCL 1.2 REQUIRED) ：PCL的版本不能低于1.2，REQUIRED表示需求PCL中的所有内容
-include_directories(${PCL_INCLUDE_DIRS}) ：
-link_directories(${PCL_LIBRARY_DIRS}) ：
-add_definitions(${PCL_DEFINITIONS}) ：
-add_executable(pcd_write pcd_write.cpp) ：告知cmake从pcd_write.cpp中创建可执行文件，cmake将负责后缀（在Windows平台上为.exe，在UNIX上为空白）
-target_link_libraries(pcd_write_test ${PCL_LIBRARIES}) ：让链接器知道我们链接的库
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR) ：cmake的版本不能低于3.5 否则报错  
+project(pcd_write) ：最终生成的可执行文件叫pcd_write  
+find_package(PCL 1.2 REQUIRED) ：PCL的版本不能低于1.2，REQUIRED表示需求PCL中的所有内容  
+include_directories(${PCL_INCLUDE_DIRS}) ：  
+link_directories(${PCL_LIBRARY_DIRS}) ：  
+add_definitions(${PCL_DEFINITIONS}) ：  
+add_executable(pcd_write pcd_write.cpp) ：告知cmake从pcd_write.cpp中创建可执行文件，cmake将负责后缀（在Windows平台上为.exe，在UNIX上为空白）  
+target_link_libraries(pcd_write_test ${PCL_LIBRARIES}) ：让链接器知道我们链接的库  
 3. 还是在和pcd_write_test.cpp同级目录下打开命令行，按下列命令输入命令
 ```git
 $ cd /PATH/TO/MY/GRAND/PROJECT
