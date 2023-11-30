@@ -153,6 +153,7 @@ std::vector<pcl::PointXYZ> data = cloud.points;
 4. is_dense : 当point的值为非nan时is_dense=true，当point的值为nan时is_dense=false
 5. sensor_origin_ : sensor的平移信息
 6. sensor_orientation : sensor的旋转信息
+
 **在c++项目中使用pcl**
 
 
