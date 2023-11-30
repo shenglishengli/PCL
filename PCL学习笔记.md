@@ -155,6 +155,50 @@ std::vector<pcl::PointXYZ> data = cloud.points;
 6. sensor_orientation : sensor的旋转信息
 
 **在c++项目中使用pcl**
+1. 在某一文件夹例如project文件夹下新建一个pcd_write_test.cpp文件，并将下列内容复制到pcd_write_test.cpp文件中
+```git
+#include <iostream>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
+int
+  main ()
+{
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+
+  // Fill in the cloud data
+  cloud.width    = 5;
+  cloud.height   = 1;
+  cloud.is_dense = false;
+  cloud.resize (cloud.width * cloud.height);
+
+  for (auto& point: cloud)
+  {
+    point.x = 1024 * rand () / (RAND_MAX + 1.0f);
+    point.y = 1024 * rand () / (RAND_MAX + 1.0f);
+    point.z = 1024 * rand () / (RAND_MAX + 1.0f);
+  }
+
+  pcl::io::savePCDFileASCII ("test_pcd.pcd", cloud);
+  std::cerr << "Saved " << cloud.size () << " data points to test_pcd.pcd." << std::endl;
+
+  for (const auto& point: cloud)
+    std::cerr << "    " << point.x << " " << point.y << " " << point.z << std::endl;
+
+  return (0);
+}
+```
+2. 在和pcd_write_test.cpp同级目录下创建CMakelists.txt，并将下列内容复制到CMakelists.txt中
+```git
+cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+project(MY_GRAND_PROJECT)
+find_package(PCL 1.3 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+add_executable(pcd_write_test pcd_write.cpp)
+target_link_libraries(pcd_write_test ${PCL_LIBRARIES})
+```   
 
 
 
