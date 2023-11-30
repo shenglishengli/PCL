@@ -199,8 +199,15 @@ add_definitions(${PCL_DEFINITIONS})
 add_executable(pcd_write_test pcd_write.cpp)
 target_link_libraries(pcd_write_test ${PCL_LIBRARIES})
 ```   
-
-
+3. 还是在和pcd_write_test.cpp同级目录下打开命令行，按下列命令输入命令
+```git
+$ cd /PATH/TO/MY/GRAND/PROJECT
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ ./pcd_write_test
+```   
 
 
 
