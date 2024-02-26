@@ -377,7 +377,11 @@ $ cd build
 $ cmake ..
 $ make
 $ ./matrix_transform cube.ply
-```   
+```
+**增加自定义的pointT type**  
+1.PCL自带的point type：XYZ数据，点特征直方图  
+2.PCL不自带，需要自己定义的point type  
+
 
 
 
