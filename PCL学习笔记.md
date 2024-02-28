@@ -379,7 +379,32 @@ $ make
 $ ./matrix_transform cube.ply
 ```
 **增加自定义的pointT type**  
-1.PCL自带的point type：XYZ数据，点特征直方图  
+1.PCL自带的point type：XYZ数据，点特征直方图等等  
+```git
+PointXYZI  成员：X Y Z intensity
+PointXYZRGBA  成员：X Y Z r g b a
+PointXY  成员：X Y
+interestPoint  成员：X Y Z strength
+Normal  成员：normal[] curvature
+PointNormal  成员：X Y Z normal[3] curvature
+PointXYZRGBNormal  成员：X Y Z R G B A normal[3] curvature
+PointXYZINormal  成员：X Y Z intensity normal[3] curvature
+PointWithRange  成员：X Y Z range
+PointWithViewpoint 成员：X Y Z vp_x vp_y vp_z
+MomentInvariants  成员：j1 j2 j3
+PrincipalRadiiRSD  成员：r_min r_max
+Boundary  成员：boundary_point
+PrincipalCurvatures  成员：principal_curvature[3] pc1 pc2
+PFHSignature125  成员：pfh[125](点特征直方图)
+FPFHSignature33  成员：fpfh[33](快速点特征直方图)
+VFHSignature308  成员：vfh[308]
+Narf36  成员：X Y Z roll pitch yaw descriptor[36]
+BorderDescription 成员：X Y BorderTraits
+IntensityGradient 成员：gradient
+Histogram  成员：histogram[N]
+PointWithScale  成员：X Y Z scale
+PointSurfel 成员：X Y Z normal[3] R G B A radius confidence curvature
+```
 2.PCL不自带，需要自己定义的point type  
 
 
