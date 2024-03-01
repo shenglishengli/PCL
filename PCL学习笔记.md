@@ -406,6 +406,9 @@ PointWithScale  成员：X Y Z scale
 PointSurfel 成员：X Y Z normal[3] R G B A radius confidence curvature
 ```
 2.PCL不自带，需要自己定义的point type  
+**写一个新的PCL类**  
+
+
 
 
 
