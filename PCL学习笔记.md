@@ -407,11 +407,22 @@ PointSurfel 成员：X Y Z normal[3] R G B A radius confidence curvature
 ```
 2.PCL不自带，需要自己定义的point type  
 **写一个新的PCL类**  
+xxx.h  头文件  
+```git
 
+```
+xxx.hpp  声明方法  
+```git
 
+```
+xxx.cpp  实现方法  
+```git
 
+```
+CMakeList.txt   build项目
+```git
 
-
+```
 
 
 
