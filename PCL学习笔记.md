@@ -409,19 +409,46 @@ PointSurfel 成员：X Y Z normal[3] R G B A radius confidence curvature
 **写一个新的PCL类**  
 xxx.h  头文件  
 ```git
-
+ #include <pcl/filters/filter.h>
+ namespace pcl
+ {
+   template<typename PointT>
+   class BilateralFilter : public Filter<PointT>
+   {
+   };
+ }
 ```
 xxx.hpp  声明方法  
 ```git
-
+#include <pcl/filters/bilateral.h>
 ```
 xxx.cpp  实现方法  
 ```git
-
+ #include <pcl/filters/bilateral.h>
+ #include <pcl/filters/impl/bilateral.hpp>
 ```
 CMakeList.txt   build项目
 ```git
+ # Find "set (srcs", and add a new entry there, e.g.,
+ set (srcs
+      src/conditional_removal.cpp
+      # ...
+      src/bilateral.cpp
+      )
 
+ # Find "set (incs", and add a new entry there, e.g.,
+ set (incs
+      include pcl/${SUBSYS_NAME}/conditional_removal.h
+      # ...
+      include pcl/${SUBSYS_NAME}/bilateral.h
+      )
+
+ # Find "set (impl_incs", and add a new entry there, e.g.,
+ set (impl_incs
+      include/pcl/${SUBSYS_NAME}/impl/conditional_removal.hpp
+      # ...
+      include/pcl/${SUBSYS_NAME}/impl/bilateral.hpp
+      )
 ```
 
 
