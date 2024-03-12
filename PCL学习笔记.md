@@ -454,7 +454,7 @@ CMakeList.txt   build项目
 setInputCloud() ：输入点云数据  
 setSearchSurface()  ：遍历点云表面查找邻接点  
 setIndices()  ：为点云加上索引  
-
+**估计PointCloud表面的法线**    
 
 
 
