@@ -451,9 +451,9 @@ CMakeList.txt   build项目
       )
 ```
 **3D特征是如何在PCL中运作的**  
-setInputCloud() 输入点云数据  
-setSearchSurface()  遍历点云表面查找邻接点  
-setIndices()  为点云加上索引  
+setInputCloud() ：输入点云数据  
+setSearchSurface()  ：遍历点云表面查找邻接点  
+setIndices()  ：为点云加上索引  
 
 
 
