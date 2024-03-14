@@ -455,8 +455,35 @@ setInputCloud() ：输入点云数据
 setSearchSurface()  ：遍历点云表面查找邻接点  
 setIndices()  ：为点云加上索引  
 **估计PointCloud表面的法线**    
-
-
-
-
+1.如何计算点云表面的法线？  
+利用协方差矩阵的特征值和特征向量计算法线。  
+2.PCL中计算法线的步骤  
+```git
+pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
+```
+输入点云数据
+```git
+ne.setRadiusSearch (0.03);
+```
+使用0.03m范围内的点来计算法线
+```git
+compute3DCentroid (cloud, xyz_centroid);
+```
+估计邻接点群的质心
+```git
+computeCovarianceMatrix (cloud, xyz_centroid, covariance_matrix);
+```
+计算协方差矩阵
+```git
+computePointNormal (const pcl::PointCloud<PointInT> &cloud, const std::vector<int> &indices, Eigen::Vector4f &plane_parameters, float &curvature);
+```
+计算单个点的法线  
+cloud表示输入的点  
+indices表示k个最近邻居的集合  
+plane_parameters表示xyz三个方向的法线  
+curvature表示协方差矩阵的特征值  
+```git
+flipNormalTowardsViewpoint (const PointT &point, float vp_x, float vp_y, float vp_z, Eigen::Vector4f &normal);
+```
+令所有的法向量都朝向veiwpoint方向
    
