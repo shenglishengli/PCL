@@ -486,4 +486,8 @@ curvature表示协方差矩阵的特征值
 flipNormalTowardsViewpoint (const PointT &point, float vp_x, float vp_y, float vp_z, Eigen::Vector4f &normal);
 ```
 令所有的法向量都朝向veiwpoint方向
-**利用积分图像估计法线**    
+**利用积分图像估计法线**   
+计算积分图像  
+```git
+pcl::IntegralImageNormalEstimation<pcl::PointXYZ,pcl::Normal> ne;
+```
