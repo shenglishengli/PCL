@@ -491,3 +491,11 @@ flipNormalTowardsViewpoint (const PointT &point, float vp_x, float vp_y, float v
 ```git
 pcl::IntegralImageNormalEstimation<pcl::PointXYZ,pcl::Normal> ne;
 ```
+基于积分图形计算法线  
+```git
+ne.setNormalEstimationMethod(ne.AVERAGE_3D_GRADIENT);
+ne.setMaxDepthChangeFactor(0.02f);
+ne.setNormalSmoothingSize(10.0f);
+ne.setInputCloud(cloud);
+ne.compute(*normals);
+```
