@@ -499,3 +499,43 @@ ne.setNormalSmoothingSize(10.0f);
 ne.setInputCloud(cloud);
 ne.compute(*normals);
 ```
+**点直方图（PFH）算子**   
+PFH算子是通过点周边K个邻居的几何属性得到的4维特征。  
+假设点周边有K个邻居，两两组合得到（假设P1 P2是K个邻居中的两个）  
+```git
+u=n1(n1是P1的法线)
+v=u*(P1-P2)/||P1-P2||
+W=U*V
+```
+```git
+u=n2(n2是P2的法线)
+v=u*(P1-P2)/||P1-P2||
+W=U*V
+```
+上面的uvw进一步计算得到  
+```git
+angle1=v.n1
+angle2=u.(P1-P2)/d(d是P1和P2的欧几里得距离)
+angle3=arctan(w.n1,u.n1)
+```
+```git
+angle1=v.n2
+angle2=u.(P1-P2)/d(d是P1和P2的欧几里得距离)
+angle3=arctan(w.n2,u.n2)
+```
+最后会得到4个特征（angle1,angle2,angle3,d）  
+PCL中使用PFH算子的步骤如下：  
+1.创建PFH类，并计算点云法线  
+```git
+pcl::PFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::PFHSignature125> pfh;
+pfh.setInputCloud (cloud);
+pfh.setInputNormals (normals);
+```
+2.计算PFH特征  
+```git
+computePointPFHSignature (const pcl::PointCloud<PointInT> &cloud,
+                          const pcl::PointCloud<PointNT> &normals,
+                          const std::vector<int> &indices,
+                          int nr_split,
+                          Eigen::VectorXf &pfh_histogram);
+```
