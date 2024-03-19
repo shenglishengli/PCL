@@ -523,7 +523,12 @@ angle1=v.n2
 angle2=u.(P1-P2)/d(d是P1和P2的欧几里得距离)
 angle3=arctan(w.n2,u.n2)
 ```
-最后会得到4个特征（angle1,angle2,angle3,d）  
+最后会得到4个特征（angle1,angle2,angle3,d） 
+```git
+computePairFeatures (const Eigen::Vector4f &p1, const Eigen::Vector4f &n1,
+                     const Eigen::Vector4f &p2, const Eigen::Vector4f &n2,
+                     float &f1, float &f2, float &f3, float &f4);
+```
 PCL中使用PFH算子的步骤如下：  
 1.创建PFH类，并计算点云法线  
 ```git
