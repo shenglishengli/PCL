@@ -544,3 +544,19 @@ computePointPFHSignature (const pcl::PointCloud<PointInT> &cloud,
                           int nr_split,
                           Eigen::VectorXf &pfh_histogram);
 ```
+**viewpoint特征直方图（VFH）算子**   
+1.什么是viewpoint特征：视点特征就是计算视点与法线之间的特征数据（角度距离等）  
+2.使用方法：
+```git
+pcl::VFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::VFHSignature308> vfh;
+vfh.setInputCloud (cloud);
+vfh.setInputNormals (normals);
+pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+vfh.setSearchMethod (tree);
+
+// Output datasets
+pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs (new pcl::PointCloud<pcl::VFHSignature308> ());
+
+// Compute the features 计算出VFH特征
+vfh.compute (*vfhs);
+```
