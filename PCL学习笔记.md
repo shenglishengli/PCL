@@ -560,3 +560,4 @@ pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs (new pcl::PointCloud<pcl::VFHSig
 // Compute the features 计算出VFH特征
 vfh.compute (*vfhs);
 ```
+**如何从范围图中提取处NARF特征**  
