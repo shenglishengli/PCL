@@ -540,7 +540,7 @@ pfh.setInputNormals (normals);
 ```git
 computePointPFHSignature (const pcl::PointCloud<PointInT> &cloud,
                           const pcl::PointCloud<PointNT> &normals,
-                          const std::vector<int> &indices,
+                          const std。。了。。。 ::vector<int> &indices,
                           int nr_split,
                           Eigen::VectorXf &pfh_histogram);
 ```
@@ -560,4 +560,38 @@ pcl::PointCloud<pcl::VFHSignature308>::Ptr vfhs (new pcl::PointCloud<pcl::VFHSig
 // Compute the features 计算出VFH特征
 vfh.compute (*vfhs);
 ```
-**如何从范围图中提取处NARF特征**  
+**计算惯性矩和偏心距的算子**  
+1. 点云特征提取的步骤：点云的协方差矩阵-->特征值，特征向量-->绕当前轴旋转-->用当前轴计算偏心率  
+2.使用方法：  
+使用pcl::MomentOfInertiaEstimation
+```git
+//载入点云
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
+feature_extractor.setInputCloud (cloud);
+feature_extractor.compute ();
+//获取MomentOfInertiaEstimation计算的结果
+feature_extractor.getMomentOfInertia (moment_of_inertia);
+feature_extractor.getEccentricity (eccentricity);
+feature_extractor.getAABB (min_point_AABB, max_point_AABB);
+feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
+feature_extractor.getEigenValues (major_value, middle_value, minor_value);
+feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
+feature_extractor.getMassCenter (mass_center);
+```
+**旋转投影特征**   
+1.使用pcl::ROPSEstimation来提取特征
+2.计算特征的步骤：截取局部表面-->计算局部参考系-->将局部参考系和OX,OY,OZ对齐-->旋转过程中计算点在XY,XZ,YZ的投影-->得到分布矩阵-->计算每个分布矩阵的中心距  
+```git
+pcl::ROPSEstimation <pcl::PointXYZ, pcl::Histogram <135> > feature_estimator;
+  feature_estimator.setSearchMethod (search_method);
+  feature_estimator.setSearchSurface (cloud);
+  feature_estimator.setInputCloud (cloud);
+  feature_estimator.setIndices (indices);
+  feature_estimator.setTriangles (triangles);
+  feature_estimator.setRadiusSearch (support_radius);
+  feature_estimator.setNumberOfPartitionBins (number_of_partition_bins);
+  feature_estimator.setNumberOfRotations (number_of_rotations);
+  feature_estimator.setSupportRadius (support_radius);
+
+```
