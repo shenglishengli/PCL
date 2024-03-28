@@ -593,5 +593,6 @@ pcl::ROPSEstimation <pcl::PointXYZ, pcl::Histogram <135> > feature_estimator;
   feature_estimator.setNumberOfPartitionBins (number_of_partition_bins);
   feature_estimator.setNumberOfRotations (number_of_rotations);
   feature_estimator.setSupportRadius (support_radius);
-
 ```
+**计算全局对齐空间分布算子**   
+
