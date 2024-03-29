@@ -594,5 +594,26 @@ pcl::ROPSEstimation <pcl::PointXYZ, pcl::Histogram <135> > feature_estimator;
   feature_estimator.setNumberOfRotations (number_of_rotations);
   feature_estimator.setSupportRadius (support_radius);
 ```
-**计算全局对齐空间分布算子**   
+**计算全局对齐空间分布特征算子**   
+1.该算子主要用于物体识别和姿态估计  
+2.计算步骤：计算点云的参考系-->将点云的参考系和标准坐标系对齐-->根据点云的空间分布计算点云的特征-->根据特征识别物体  
+3.具体计算公式步骤：计算点云的协方差矩阵-->计算特征值特征向量-->将特征值从大到小排列对应得到X轴Y轴Z轴-->j将X轴Y轴Z轴与标准坐标系对齐-->得到直方图
+4.使用pcl::GASDSignature984/pcl::GASDSignature512来计算全局空间分布特征  
+```git
+//创建GASD类，并输入点云数据
+pcl::GASDColorEstimation<pcl::PointXYZRGBA, pcl::GASDSignature984> gasd;
+pcl::GASDEstimation<pcl::PointXYZ, pcl::GASDSignature512> gasd;
+  gasd.setInputCloud (cloud);
+//计算特征
+pcl::PointCloud<pcl::GASDSignature984> descriptor;
+gasd.compute (descriptor);
+//获得对齐变换
+Eigen::Matrix4f trans = gasd.getTransform ();
+//跟新直方图
+for (std::size_t i = 0; i < std::size_t( descriptor[0].descriptorSize ()); ++i)
+  {
+    descriptor[0].histogram[i];
+  }
+```
+
 
