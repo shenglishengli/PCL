@@ -615,5 +615,22 @@ for (std::size_t i = 0; i < std::size_t( descriptor[0].descriptorSize ()); ++i)
     descriptor[0].histogram[i];
   }
 ```
-
-
+**使用passthrough过滤器过滤点云**   
+1.使用的方法pcl::PassThrough<pcl::PointXYZ>  
+2.
+```git
+pcl::PassThrough<pcl::PointXYZ> pass;
+pass.setInputCloud(cloud)
+pass.setFilterFieldName("z");
+pass.setFilterLimits(0,1);
+pass.filter(*cloud_filtered);
+```
+**使用voxelGriid过滤器对点云进行下采样**  
+1.计算原理：计算体素中所有点的质心，用这个点来表示该体素  
+2.代码
+```git
+pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+  sor.setInputCloud (cloud);
+  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  sor.filter (*cloud_filtered);
+```
