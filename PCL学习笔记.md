@@ -580,7 +580,7 @@ feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
 feature_extractor.getMassCenter (mass_center);
 ```
 **计算旋转投影特征的算子**   
-1.使用pcl::ROPSEstimation来提取特征
+1.使用pcl::ROPSEstimation来提取特征  
 2.计算特征的步骤：截取局部表面-->计算局部参考系-->将局部参考系和OX,OY,OZ对齐-->旋转过程中计算点在XY,XZ,YZ的投影-->得到分布矩阵-->计算每个分布矩阵的中心距  
 ```git
 pcl::ROPSEstimation <pcl::PointXYZ, pcl::Histogram <135> > feature_estimator;
