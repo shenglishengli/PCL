@@ -499,7 +499,7 @@ ne.setNormalSmoothingSize(10.0f);
 ne.setInputCloud(cloud);
 ne.compute(*normals);
 ```
-**点直方图（PFH）算子**   
+**计算单个点的直方图（PFH）算子**   
 PFH算子是通过点周边K个邻居的几何属性得到的4维特征。  
 假设点周边有K个邻居，两两组合得到（假设P1 P2是K个邻居中的两个）  
 ```git
@@ -544,7 +544,7 @@ computePointPFHSignature (const pcl::PointCloud<PointInT> &cloud,
                           int nr_split,
                           Eigen::VectorXf &pfh_histogram);
 ```
-**viewpoint特征直方图（VFH）算子**   
+**计算viewpoint特征直方图（VFH）的算子**   
 1.什么是viewpoint特征：视点特征就是计算视点与法线之间的特征数据（角度距离等）  
 2.使用方法：
 ```git
@@ -579,7 +579,7 @@ feature_extractor.getEigenValues (major_value, middle_value, minor_value);
 feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
 feature_extractor.getMassCenter (mass_center);
 ```
-**计算旋转投影特征算子**   
+**计算旋转投影特征的算子**   
 1.使用pcl::ROPSEstimation来提取特征
 2.计算特征的步骤：截取局部表面-->计算局部参考系-->将局部参考系和OX,OY,OZ对齐-->旋转过程中计算点在XY,XZ,YZ的投影-->得到分布矩阵-->计算每个分布矩阵的中心距  
 ```git
@@ -594,7 +594,7 @@ pcl::ROPSEstimation <pcl::PointXYZ, pcl::Histogram <135> > feature_estimator;
   feature_estimator.setNumberOfRotations (number_of_rotations);
   feature_estimator.setSupportRadius (support_radius);
 ```
-**计算全局对齐空间分布特征算子**   
+**计算全局对齐空间分布特征的算子**   
 1.该算子主要用于物体识别和姿态估计  
 2.计算步骤：计算点云的参考系-->将点云的参考系和标准坐标系对齐-->根据点云的空间分布计算点云的特征-->根据特征识别物体  
 3.具体计算公式步骤：计算点云的协方差矩阵-->计算特征值特征向量-->将特征值从大到小排列对应得到X轴Y轴Z轴-->j将X轴Y轴Z轴与标准坐标系对齐-->得到直方图
