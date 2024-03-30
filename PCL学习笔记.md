@@ -634,3 +634,33 @@ pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.setLeafSize (0.01f, 0.01f, 0.01f);
   sor.filter (*cloud_filtered);
 ```
+**使用staticalOutlinerRemoval移除离群点**   
+1.计算原理：计算每个点到周围邻居的距离，查看距离分布是否是告诉分布，如果距离超过了均值和标准差，则该邻居是离群点  
+2.代码
+```git
+// Create the filtering object
+  pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+  sor.setInputCloud (cloud);
+  sor.setMeanK (50);
+  sor.setStddevMulThresh (1.0);
+  sor.filter (*cloud_filtered);
+```
+**使用parameter模型对点进行投影**   
+1.计算原理：设置点将被投影到的平面上，ProjectInliers将点投影到平面上
+2.代码
+```git
+// Create a set of planar coefficients with X=Y=0,Z=1
+  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
+  coefficients->values.resize (4);
+  coefficients->values[0] = coefficients->values[1] = 0;
+  coefficients->values[2] = 1.0;
+  coefficients->values[3] = 0;
+
+// Create the filtering object
+  pcl::ProjectInliers<pcl::PointXYZ> proj;
+  proj.setModelType (pcl::SACMODEL_PLANE);
+  proj.setInputCloud (cloud);
+  proj.setModelCoefficients (coefficients);
+  proj.filter (*cloud_projected);
+```
+**从点云中提取索引** 
