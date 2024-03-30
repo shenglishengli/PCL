@@ -646,7 +646,7 @@ pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   sor.filter (*cloud_filtered);
 ```
 **使用parameter模型对点进行投影**   
-1.计算原理：设置点将被投影到的平面上，ProjectInliers将点投影到平面上
+1.计算原理：设置点将被投影到的平面上，ProjectInliers将点投影到平面上  
 2.代码
 ```git
 // Create a set of planar coefficients with X=Y=0,Z=1
@@ -663,4 +663,294 @@ pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
   proj.setModelCoefficients (coefficients);
   proj.filter (*cloud_projected);
 ```
-**从点云中提取索引** 
+**从点云中提取索引**   
+1.计算原理：使用extractIndices过滤器对点云进行分割，从而得到索引  
+2.代码  
+```git
+//使用voxelGrid过滤器进行下采样
+ pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+  sor.setInputCloud (cloud_blob);
+  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  sor.filter (*cloud_filtered_blob);
+//使用SACSegmentation创建分割对象
+ pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setMaxIterations (1000);
+  seg.setDistanceThreshold (0.01);
+//使用ExtractIndices提取索引
+  pcl::ExtractIndices<pcl::PointXYZ> extract;
+  extract.setInputCloud (cloud_filtered);
+  extract.setIndices (inliers);
+  extract.setNegative (false);
+  extract.filter (*cloud_p);
+  seg.setInputCloud (cloud_filtered);
+  seg.segment (*inliers, *coefficients);
+```
+
+**使用conditional或者radiusOutlier removal来移除离群点**  
+1.计算原理：  
+conditionalRemoval过滤器的计算原理：对点云中不满足一个或多个给定条件的索引进行删除  
+radiusOutlierRemoval过滤器的计算原理：计算点云中每个点周围满足距离条件的邻居个数，当邻居个数少于阈值时，就是离群点  
+2.代码  
+```git
+//使用conditionalRemoval过滤器
+    pcl::RadiusOutlierRemoval<pcl::PointXYZ> outrem;
+    outrem.setInputCloud(cloud);
+    outrem.setRadiusSearch(0.8);
+    outrem.setMinNeighborsInRadius (2);
+    outrem.setKeepOrganized(true);
+    outrem.filter (*cloud_filtered);
+//使用radiusOutlierRemoval过滤器
+    pcl::ConditionAnd<pcl::PointXYZ>::Ptr range_cond (new
+    pcl::ConditionAnd<pcl::PointXYZ> ());
+    range_cond->addComparison (pcl::FieldComparison<pcl::PointXYZ>::ConstPtr (new
+    pcl::FieldComparison<pcl::PointXYZ> ("z", pcl::ComparisonOps::GT, 0.0)));
+    range_cond->addComparison (pcl::FieldComparison<pcl::PointXYZ>::ConstPtr (new
+    pcl::FieldComparison<pcl::PointXYZ> ("z", pcl::ComparisonOps::LT, 0.8)));
+    pcl::ConditionalRemoval<pcl::PointXYZ> condrem;
+    condrem.setCondition (range_cond);
+    condrem.setInputCloud (cloud);
+
+    condrem.setKeepOrganized(true);
+    condrem.filter (*cloud_filtered);
+```
+**如何从范围图像中提取NARF关键点**  
+使用NarfKeypoint narf_keypoint_detector提取关键点
+1.计算原理：
+2.代码：
+```git
+pcl::RangeImageBorderExtractor range_image_border_extractor;
+pcl::NarfKeypoint narf_keypoint_detector (&range_image_border_extractor);
+narf_keypoint_detector.setRangeImage (&range_image);
+narf_keypoint_detector.getParameters ().support_size = support_size;
+pcl::PointCloud<int> keypoint_indices;
+narf_keypoint_detector.compute (keypoint_indices);
+```
+**如何使用KdTree搜索**  
+1.什么是KdTree：是一种数据结构，在点云处理中k-d树都是三维的  
+2.计算原理：有点类似深度优先遍历  
+3.代码
+```git
+//创建kd树类
+pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+  kdtree.setInputCloud (cloud);
+  pcl::PointXYZ searchPoint;
+  searchPoint.x = 1024.0f * rand () / (RAND_MAX + 1.0f);
+  searchPoint.y = 1024.0f * rand () / (RAND_MAX + 1.0f);
+  searchPoint.z = 1024.0f * rand () / (RAND_MAX + 1.0f);
+```
+**点云压缩**  
+1.计算原理：因为点云一般包含距离，颜色，法线等附加信息，因此点云慧占用大量内存，因此需要对点云进行压缩  
+2.使用openNIGrabber对点云进行压缩  
+3.代码：
+```git
+//创建OpenNIGrabber抓取器
+pcl::Grabber* interface = new pcl::OpenNIGrabber ();
+std::function<void(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f =
+[this] (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud) { cloud_cb_ (cloud); };
+connect callback function for desired signal. In this case its a point cloud with color values
+boost::signals2::connection c = interface->registerCallback (f);
+//开始接收点云
+interface->start ();
+
+// 存储压缩点云的字符流
+std::stringstream compressedData;
+// 压缩点云
+PointCloudEncoder->encodePointCloud (cloud, compressedData);
+// 解压缩点云
+PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
+```
+**八叉树的搜索操作和空间划分操作**  
+1.什么是八叉树：八叉树是一种基于树结构的用来管理三维数据的一种数据结构，该结构内部每个节点都正好有八个子节点     
+2.代码
+```git
+//创建八叉树
+  pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree (resolution);
+  octree.setInputCloud (cloud);
+  octree.addPointsFromInputCloud ();
+//使用体素的邻居搜索
+if (octree.voxelSearch (searchPoint, pointIdxVec))
+  {
+    std::cout << "Neighbors within voxel search at (" << searchPoint.x 
+     << " " << searchPoint.y 
+     << " " << searchPoint.z << ")" 
+     << std::endl;
+              
+    for (std::size_t i = 0; i < pointIdxVec.size (); ++i)
+   std::cout << "    " << (*cloud)[pointIdxVec[i]].x 
+       << " " << (*cloud)[pointIdxVec[i]].y 
+       << " " << (*cloud)[pointIdxVec[i]].z << std::endl;
+  }
+//K近邻搜索
+int K = 10;
+  std::vector<int> pointIdxNKNSearch;
+  std::vector<float> pointNKNSquaredDistance;
+  std::cout << "K nearest neighbor search at (" << searchPoint.x 
+            << " " << searchPoint.y 
+            << " " << searchPoint.z
+            << ") with K=" << K << std::endl;
+
+  if (octree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0)
+  {
+    for (std::size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
+      std::cout << "    "  <<   (*cloud)[ pointIdxNKNSearch[i] ].x 
+                << " " << (*cloud)[ pointIdxNKNSearch[i] ].y 
+                << " " << (*cloud)[ pointIdxNKNSearch[i] ].z 
+                << " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;
+  }
+//半径内邻居搜索
+std::vector<int> pointIdxRadiusSearch;
+  std::vector<float> pointRadiusSquaredDistance;
+  float radius = 256.0f * rand () / (RAND_MAX + 1.0f);
+  std::cout << "Neighbors within radius search at (" << searchPoint.x 
+      << " " << searchPoint.y 
+      << " " << searchPoint.z
+      << ") with radius=" << radius << std::endl;
+  if (octree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0)
+  {
+    for (std::size_t i = 0; i < pointIdxRadiusSearch.size (); ++i)
+      std::cout << "    "  <<   (*cloud)[ pointIdxRadiusSearch[i] ].x 
+                << " " << (*cloud)[ pointIdxRadiusSearch[i] ].y 
+                << " " << (*cloud)[ pointIdxRadiusSearch[i] ].z 
+                << " (squared distance: " << pointRadiusSquaredDistance[i] << ")" << std::endl;
+  }
+```
+**无组织点云数据的空间变化检测**   
+1.计算原理：通过递归比较八叉树的树结构来判断空间的变化  
+2.代码
+```git
+//实例化第一个点云
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZ> );
+//创建基于八叉树的点云变化探测类，OctreePointCloudChangeDetector可以同时保存和管理八叉树
+pcl::octree::OctreePointCloudChangeDetector<pcl::PointXYZ> octree (resolution);
+//充实八叉树，即减少八叉树对内存的消耗又保留先前的八叉树结构
+octree.switchBuffers ();
+//实例化第二个点云
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloudB (new pcl::PointCloud<pcl::PointXYZ> );
+//使用getPointIndicesFromNewVoxels判断cloudB中的体素在cloudA中是否存在
+std::vector<int> newPointIdxVector;
+octree.getPointIndicesFromNewVoxels (newPointIdxVector);
+```
+**如何从点云中创建范围图像**  
+1.计算原理：  
+2.代码
+```git
+//定义范围图像的参数
+float angularResolution = (float) (  1.0f * (M_PI/180.0f));  //   1.0 degree in radians
+float maxAngleWidth     = (float) (360.0f * (M_PI/180.0f));  // 360.0 degree in radians
+float maxAngleHeight    = (float) (180.0f * (M_PI/180.0f));  // 180.0 degree in radians
+Eigen::Affine3f sensorPose = (Eigen::Affine3f)Eigen::Translation3f(0.0f, 0.0f, 0.0f);
+pcl::RangeImage::CoordinateFrame coordinate_frame = pcl::RangeImage::CAMERA_FRAME;
+float noiseLevel=0.00;
+float minRange = 0.0f;
+int borderSize = 1;
+
+pcl::RangeImage rangeImage;
+  rangeImage.createFromPointCloud(pointCloud, angularResolution, maxAngleWidth, maxAngleHeight,
+                                  sensorPose, coordinate_frame, noiseLevel, minRange, borderSize);
+  
+```
+**如何从范围图中提取边界**  
+1.边界分类，一共分三类，对象边界，阴影边界。面纱点，阴影边界就是激光雷达中常见的边界  
+2.代码
+```git
+//创建用于标记边界和不标记边界的PCD文件
+std::string far_ranges_filename = pcl::getFilenameWithoutExtension (filename)+"_far_ranges.pcd";
+if (pcl::io::loadPCDFile(far_ranges_filename.c_str(), far_ranges) == -1)
+  std::cout << "Far ranges file \""<<far_ranges_filename<<"\" does not exists.\n";
+//创建RangeImageBorderExtractor对象，该对象提供范围图像并计算边界信息，计算结果存放在border_descriptions中
+pcl::RangeImageBorderExtractor border_extractor (&range_image);
+pcl::PointCloud<pcl::BorderDescription> border_descriptions;
+border_extractor.compute (border_descriptions);
+```
+**基于对应分组算法的3D物体识别**  
+1.计算原理：使用对应分组算法来聚类点云，并估计当前帧聚类模型的6DOF  
+2.代码  
+```git
+//聚类任务
+//加载PCD文件
+parseCommandLine (argc, argv);
+  if (pcl::io::loadPCDFile (model_filename_, *model) < 0)
+  {
+    std::cout << "Error loading model cloud." << std::endl;
+    showHelp (argv[0]);
+    return (-1);
+  }
+  if (pcl::io::loadPCDFile (scene_filename_, *scene) < 0)
+  {
+    std::cout << "Error loading scene cloud." << std::endl;
+    showHelp (argv[0]);
+    return (-1);
+  }
+//调整分辨率
+ float resolution = static_cast<float> (computeCloudResolution (model));
+//计算法线
+pcl::NormalEstimationOMP<PointType, NormalType> norm_est;
+  norm_est.setKSearch (10);
+  norm_est.setInputCloud (model);
+  norm_est.compute (*model_normals);
+
+  norm_est.setInputCloud (scene);
+  norm_est.compute (*scene_normals);
+//下采样找到关键点
+pcl::UniformSampling<PointType> uniform_sampling;
+  uniform_sampling.setInputCloud (model);
+  uniform_sampling.setRadiusSearch (model_ss_);
+  uniform_sampling.filter (*model_keypoints);
+  std::cout << "Model total points: " << model->size () << "; Selected Keypoints: " << model_keypoints->size () << std::endl;
+  uniform_sampling.setInputCloud (scene);
+  uniform_sampling.setRadiusSearch (scene_ss_);
+  uniform_sampling.filter (*scene_keypoints);
+  std::cout << "Scene total points: " << scene->size () << "; Selected Keypoints: " << scene_keypoints->size () << std::endl;
+//将3D特诊和关键点关联起来
+descr_est.setInputCloud (model_keypoints);
+  descr_est.setInputNormals (model_normals);
+  descr_est.setSearchSurface (model);
+  descr_est.compute (*model_descriptors);
+
+  descr_est.setInputCloud (scene_keypoints);
+  descr_est.setInputNormals (scene_normals);
+  descr_est.setSearchSurface (scene);
+  descr_est.compute (*scene_descriptors);
+//使用KdTreeFLANN计算模型特征和场景特征之间的关系，使用欧几里得距离找到最相似的模型特征
+  for (std::size_t i = 0; i < scene_descriptors->size (); ++i)
+  {
+    std::vector<int> neigh_indices (1);
+    std::vector<float> neigh_sqr_dists (1);
+    if (!std::isfinite (scene_descriptors->at (i).descriptor[0])) //skipping NaNs
+    {
+      continue;
+    }
+    int found_neighs = match_search.nearestKSearch (scene_descriptors->at (i), 1, neigh_indices, neigh_sqr_dists);
+    if(found_neighs == 1 && neigh_sqr_dists[0] < 0.25f) 
+    {
+      pcl::Correspondence corr (neigh_indices[0], static_cast<int> (i), neigh_sqr_dists[0]);
+      model_scene_corrs->push_back (corr);
+    }
+  }
+//对找到的对应关系进行聚类，使用的聚类算法是hough3Dgrouping
+pcl::Hough3DGrouping<PointType, PointType, RFType, RFType> clusterer;
+    clusterer.setHoughBinSize (cg_size_);
+    clusterer.setHoughThreshold (cg_thresh_);
+    clusterer.setUseInterpolation (true);
+    clusterer.setUseDistanceWeight (false);
+    clusterer.setInputCloud (model_keypoints);
+    clusterer.setInputRf (model_rf);
+    clusterer.setSceneCloud (scene_keypoints);
+    clusterer.setSceneRf (scene_rf);
+    clusterer.setModelSceneCorrespondences (model_scene_corrs);
+    clusterer.recognize (rototranslations, clustered_corrs);
+
+```
+**隐式形状模型**  
+1.什么是隐式形状模型算法：训练步骤：第一步检测关键点，第二部估计关键点，第三步对关键点进行k-means聚类，第四步计算给定云的质心，第五步统计每个visual word的权重。训练步骤结束后就得到训练模型，然后就可以进行搜索过程：第一步检测关键点，第二步在每个特征附近找到最近的聚类（visual word），第三步对训练模型中的每一个visual word进行投票
+2.使用ImplicitShapeModel实现隐式形状模型算法
+```git
+
+```
+
+
