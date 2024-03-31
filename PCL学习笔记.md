@@ -952,5 +952,156 @@ pcl::Hough3DGrouping<PointType, PointType, RFType, RFType> clusterer;
 ```git
 
 ```
+**PCL配准API**  
+1.什么是pcl配准API：将三位点云对齐到完整模型中的过程称为配准  
+2.什么是成对配准：输出两个点云之间的旋转矩阵和平移矩阵  
+3.两个点云的配准步骤：找到关键点-->计算每个关键点的特征-->根据特征将两个点云的关键点一一对应起来-->计算旋转矩阵和平移矩阵  
+4.关键点：NARF,SIFT,FAST  
+特征：NARF,FPFH,BRIEF,SIFT  
+一一对应关键点：暴力匹配，kd树最近邻搜索（FLANN），图像空间搜索，索引空间搜索  
+计算旋转矩阵和平移矩阵：使用SVD，ICP循环  
+**如何通过迭代找到最近点**  
+1.为什么要寻找最近点：用于匹配关键点  
+2.代码： 
+使用IterativeClosestPoint
+```git
+pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+//最开始的点云
+  icp.setInputSource(cloud_in);
+//想要的点云
+  icp.setInputTarget(cloud_out);
+//如果两个点云对齐了，IterativeClosestPoint会输出true
+pcl::PointCloud<pcl::PointXYZ> Final;
+  icp.align(Final);
+  std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+  icp.getFitnessScore() << std::endl;
+```
+**如何增量的对齐点云**   
+1.步骤：
+2.代码：
+```git
+//加载数据
+ std::vector<PCD, Eigen::aligned_allocator<PCD> > data;
+  loadData (argc, argv, data);
+//创建ICP对象将两个点云联系起来，进行下采样，计算曲率
+void pairAlign (const PointCloud::Ptr cloud_src, const PointCloud::Ptr cloud_tgt, PointCloud::Ptr output, Eigen::Matrix4f &final_transform, bool downsample = false)
+//设置迭代次数
+reg.setMaximumIterations (2);
+//手动迭代30次
+for (int i = 0; i < 30; ++i)
+{
+        [...]
+        //计算旋转平移矩阵
+        points_with_normals_src = reg_result;
+        reg.setInputCloud (points_with_normals_src);
+        reg.align (*reg_result);
+        //跟踪并累积ICP的返回值
+        Ti = reg.getFinalTransformation () * Ti;
+        //当第N次和第N+1次的变化矩阵的差值小于阈值时，就更新阈值
+        if (std::abs ((reg.getLastIncrementalTransformation () - prev).sum ()) < reg.getTransformationEpsilon ())
+   reg.setMaxCorrespondenceDistance (reg.getMaxCorrespondenceDistance () - 0.001);
+ prev = reg.getLastIncrementalTransformation ();
+        [...]
+}
+//迭代结束就找到了最佳的转换矩阵
+
+```
+**如何交互迭代找到最近云**   
+1.作用：主要是一个可视化工具用于查看点云的转换过程  
+**如何使用正态分布变换**  
+1.作用：使用正态分布（NDT）来计算两个点云之间的转换矩阵，DNT算法也是一种配准算法  
+2.代码：
+```git
+//加载数据两个点云，并将其中一个点云作为参考系
+pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+//对输入点云做预处理，做滤波
+pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::ApproximateVoxelGrid<pcl::PointXYZ> approximate_voxel_filter;
+  approximate_voxel_filter.setLeafSize (0.2, 0.2, 0.2);
+  approximate_voxel_filter.setInputCloud (input_cloud);
+  approximate_voxel_filter.filter (*filtered_cloud);
+  std::cout << "Filtered cloud contains " << filtered_cloud->size ()
+            << " data points from room_scan2.pcd" << std::endl;
+//使用NDT算法
+ pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
+//设置NDT内部的参数
+ndt.setMaximumIterations (35);//迭代次数
+//ndt开始配准，target_cloud是参考点云。filtered_cloud是需要被转换的点云
+ndt.setInputSource (filtered_cloud);
+  ndt.setInputTarget (target_cloud);
+//初始化变换矩阵
+Eigen::AngleAxisf init_rotation (0.6931, Eigen::Vector3f::UnitZ ());
+  Eigen::Translation3f init_translation (1.79387, 0.720047, 0);
+  Eigen::Matrix4f init_guess = (init_translation * init_rotation).matrix ();
+//计算对齐结果
+pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  ndt.align (*output_cloud, init_guess);
+```
+**手持扫描仪**  
+**估计刚性物体的位姿**  
+代码：
+```git
+//加载数据
+pcl::io::loadPCDFile<PointNT> (argv[2], *scene_before_downsampling) < 0)
+//下采样
+pcl::console::print_highlight ("Downsampling...\n");
+  pcl::VoxelGrid<PointNT> grid;
+  const float leaf = 0.005f;
+  grid.setLeafSize (leaf, leaf, leaf);
+  grid.setInputCloud (object);
+  grid.filter (*object);
+  grid.setInputCloud (scene_before_downsampling);
+  grid.filter (*scene);
+//使用NormalEstimationOMP计算点云法线
+ pcl::console::print_highlight ("Estimating scene normals...\n");
+  pcl::NormalEstimationOMP<PointNT,PointNT> nest;
+  nest.setRadiusSearch (0.005);
+  nest.setInputCloud (scene);
+  nest.setSearchSurface (scene_before_downsampling);
+  nest.compute (*scene);
+//使用FPFHEstimationOMP 类计算点云的特征直方图
+ pcl::console::print_highlight ("Estimating features...\n");
+  FeatureEstimationT fest;
+  fest.setRadiusSearch (0.025);
+  fest.setInputCloud (object);
+  fest.setInputNormals (object);
+  fest.compute (*object_features);
+  fest.setInputCloud (scene);
+  fest.setInputNormals (scene);
+  fest.compute (*scene_features);
+//SampleConsensusPrerejective 类做ransacx循环，消除杂点对位姿估计的影响
+pcl::console::print_highlight ("Starting alignment...\n");
+  pcl::SampleConsensusPrerejective<PointNT,PointNT,FeatureT> align;
+  align.setInputSource (object);
+  align.setSourceFeatures (object_features);
+  align.setInputTarget (scene);
+  align.setTargetFeatures (scene_features);
+  align.setMaximumIterations (50000); // Number of RANSAC iterations
+  align.setNumberOfSamples (3); // Number of points to sample for generating/prerejecting a pose
+  align.setCorrespondenceRandomness (5); // Number of nearest features to use
+  align.setSimilarityThreshold (0.95f); // Polygonal edge length similarity threshold
+  align.setMaxCorrespondenceDistance (2.5f * leaf); // Inlier threshold
+  align.setInlierFraction (0.25f); // Required inlier fraction for accepting a pose hypothesis
+//开始配准/对齐
+{
+    pcl::ScopeTime t("Alignment");
+    align.align (*object_aligned);
+  }
+//对齐的对象存储在点云object_aligned中。
+printf ("\n");
+    Eigen::Matrix4f transformation = align.getFinalTransformation ();
+    pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (0,0), transformation (0,1), transformation (0,2));
+    pcl::console::print_info ("R = | %6.3f %6.3f %6.3f | \n", transformation (1,0), transformation (1,1), transformation (1,2));
+    pcl::console::print_info ("    | %6.3f %6.3f %6.3f | \n", transformation (2,0), transformation (2,1), transformation (2,2));
+    pcl::console::print_info ("\n");
+    pcl::console::print_info ("t = < %0.3f, %0.3f, %0.3f >\n", transformation (0,3), transformation (1,3), transformation (2,3));
+    pcl::console::print_info ("\n");
+    pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), object->size ());
+    pcl::visualization::PCLVisualizer visu("Alignment");
+    visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+    visu.addPointCloud (object_aligned, ColorHandlerT (object_aligned, 0.0, 0.0, 255.0), "object_aligned");
+    visu.spin ();
+```
+
 
 
