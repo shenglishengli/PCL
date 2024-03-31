@@ -1102,6 +1102,7 @@ printf ("\n");
     visu.addPointCloud (object_aligned, ColorHandlerT (object_aligned, 0.0, 0.0, 255.0), "object_aligned");
     visu.spin ();
 ```
+**如何使用随机样本构建模型**  
 
 
 
