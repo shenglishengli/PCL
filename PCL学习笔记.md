@@ -1139,8 +1139,210 @@ pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
   seg.setDistanceThreshold (0.05);
   seg.setRadiusLimits (0, 0.1);
 ```
+**基于欧几里得提取簇**  
+1.计算原理：本质是一种聚类方法，为点云创建kd树-->创建簇列表Q-->将点p加入到Q中，在pi的周围按半径r将点纳入簇中-->当Q中所有点都处理完毕，就将Q中的点全部添加簇C中，并将Q重置为空列表  
+2.代码  
+使用pcl::EuclideanClusterExtraction提取簇  
+```git
+//创建KD树对象
+pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+  tree->setInputCloud (cloud_filtered);
+//创建PointIndices 向量，用于保存每一个PointIndices簇的索引
+std::vector<pcl::PointIndices> cluster_indices;
+//创建EuclideanClusterExtraction 对象，设置半径，用于计算簇
+  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+  ec.setClusterTolerance (0.02); // 2cm
+  ec.setMinClusterSize (100);
+  ec.setMaxClusterSize (25000);
+  ec.setSearchMethod (tree);
+  ec.setInputCloud (cloud_filtered);
+  ec.extract (cluster_indices);
+//迭代cluster_indices用于为每一个条目创建新的点云，将当前簇的所有点写入点云中
+int j = 0;
+  for (const auto& cluster : cluster_indices)
+  {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+    for (const auto& idx : cluster.indices) {
+      cloud_cluster->push_back((*cloud_filtered)[idx]);
+    } //*
+    cloud_cluster->width = cloud_cluster->size ();
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
 
+```
+**针对区域增长进行分割**  
+1.计算原理：使用的方法是使用点法线之间的角度进行聚类  
+计算每个点的曲率-->对曲率进行排序-->选取曲率值最小的点添加到种子集合中-->计算每个种子点找到邻近点-->计算每个邻近点法线和种子点法线之间的角度，如果小于阈值，则添加到簇-->计算每个邻近点曲率和种子点曲率之间的差值，如果曲率小于阈值，则添加到簇  
+2.代码：
+使用pcl::RegionGrowing 类实现区域增长过程中进行簇的计算  
+```git
+//加载数据
+pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  if ( pcl::io::loadPCDFile <pcl::PointXYZ> ("region_growing_tutorial.pcd", *cloud) == -1)
+  {
+    std::cout << "Cloud reading failed." << std::endl;
+    return (-1);
+  }
+//创建pcl::NormalEstimation 类计算法线
+  pcl::search::Search<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+  pcl::PointCloud <pcl::Normal>::Ptr normals (new pcl::PointCloud <pcl::Normal>);
+  pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
+  normal_estimator.setSearchMethod (tree);
+  normal_estimator.setInputCloud (cloud);
+  normal_estimator.setKSearch (50);
+  normal_estimator.compute (*normals);
+//使用pcl:：RegionGrowing用于分割点云
+ pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
+  reg.setMinClusterSize (50);
+  reg.setMaxClusterSize (1000000);
+ reg.setSearchMethod (tree);
+  reg.setNumberOfNeighbours (30);
+  reg.setInputCloud (cloud);
+  reg.setIndices (indices);
+  reg.setInputNormals (normals);
+ reg.setSmoothnessThreshold (3.0 / 180.0 * M_PI);
+  reg.setCurvatureThreshold (1.0);
+```
+**基于颜色的对增长的区域进行分割**  
+1.计算原理：第一步将颜色相近的两个相邻簇合并在一起，第二步使用合并算法进行过分割和欠分割控制  
+2.代码：  
+使用pcl::RegionGrowingRGB 类进行计算
+```git
+//加载数据
+ pcl::PointCloud <pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud <pcl::PointXYZRGB>);
+  if ( pcl::io::loadPCDFile <pcl::PointXYZRGB> ("region_growing_rgb_tutorial.pcd", *cloud) == -1 )
+  {
+    std::cout << "Cloud reading failed." << std::endl;
+    return (-1);
+  }
+//创建pcl::RegionGrowingRGB类，并设置索引，搜索方法
+ pcl::RegionGrowingRGB<pcl::PointXYZRGB> reg;
+  reg.setInputCloud (cloud);
+  reg.setIndices (indices);
+  reg.setSearchMethod (tree);
+//设置距离阈值，用于判定邻近点
+  reg.setDistanceThreshold (10);
+//设置颜色阈值，用于判定点是否属于同一簇
+reg.setPointColorThreshold (6);
+//设置簇颜色阈值
+reg.setRegionColorThreshold (5);
+//启动算法
+std::vector <pcl::PointIndices> clusters;
+  reg.extract (clusters);
+```
+**基于最小切割的分割**  
+1.计算原理：计算出点云的中心和半径，从而将点云分为前景点和背景点  
+构建的点云图包含一组顶点，一组源点，一组汇点  
+构建的图中每一个顶点都通过边将源点和汇点连接起来  
+算法为每条边分配权重，权重分为3种类型：距离，背景惩罚，中心距离
+2.代码：
+使用pcl::MinCutSegmentation类  
+```git
+//加载数据
+  pcl::PointCloud <pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud <pcl::PointXYZ>);
+  if ( pcl::io::loadPCDFile <pcl::PointXYZ> ("min_cut_segmentation_tutorial.pcd", *cloud) == -1 )
+  {
+    std::cout << "Cloud reading failed." << std::endl;
+    return (-1);
+  }
+//创建pcl::MinCutSegmentation类
+pcl::MinCutSegmentation<pcl::PointXYZ> seg;
+//
+ pcl::PointCloud<pcl::PointXYZ>::Ptr foreground_points(new pcl::PointCloud<pcl::PointXYZ> ());
+  pcl::PointXYZ point;
+  point.x = 68.97;
+  point.y = -18.55;
+  point.z = 0.57;
+  foreground_points->points.push_back(point);
+  seg.setForegroundPoints (foreground_points);
+ seg.setSigma (0.25);
+  seg.setRadius (3.0433856);
+ seg.setNumberOfNeighbours (14);
+//启动程序
+std::vector <pcl::PointIndices> clusters;
+  seg.extract (clusters);
+```
+**有条件的欧几里得分割算法**  
+1.计算原理：该方法和之前的欧几里得聚类方法，区域生长分割方法，基于颜色的分割方法一样，使用了贪婪类/区域生长/洪水填充原理。与之前的方法相比该方法的优点是用户可以自定义聚类约束，如纯欧几里得，平滑度，RGB等。缺点是，没有初始种子系统，没有过度分段和欠分段控制，一次时间效率比较低。  
+2.代码
+```git
+//创建 pcl::ConditionalEuclideanClustering<PointTypeFull> cec (true);
+std::cerr << "Segmenting to clusters...\n", tt.tic ();
+  pcl::ConditionalEuclideanClustering<PointTypeFull> cec (true);
+  cec.setInputCloud (cloud_with_normals);
+  cec.setConditionFunction (&customRegionGrowing);
+  cec.setClusterTolerance (500.0);
+  cec.setMinClusterSize (cloud_with_normals->size () / 1000);
+  cec.setMaxClusterSize (cloud_with_normals->size () / 5);
+  cec.segment (*clusters);
+  cec.getRemovedClusters (small_clusters, large_clusters);
+  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+```
+**基于法线差异的分割算法**  
+1.计算原理：法线差（DON）是一种高效的计算3D点云的算法  
+给定半径，截取点云表面-->计算截取的表面法线-->对所有点的法线做归一化-->过滤掉杂点  
+2.代码：  
+```git
+//创建pcl::NormalEstimationOMP 类，该类利用多线程计算法线
+pcl::NormalEstimationOMP<PointXYZRGB, PointNormal> ne;
+  ne.setInputCloud (cloud);
+  ne.setSearchMethod (tree);
+//使用NormalEstimation.setRadiusSearch()计算大半径和小半径法线
+std::cout << "Calculating normals for scale..." << scale1 << std::endl;
+  pcl::PointCloud<PointNormal>::Ptr normals_small_scale (new pcl::PointCloud<PointNormal>);
+  ne.setRadiusSearch (scale1);
+  ne.compute (*normals_small_scale);
+  // calculate normals with the large scale
+  std::cout << "Calculating normals for scale..." << scale2 << std::endl;
+  pcl::PointCloud<PointNormal>::Ptr normals_large_scale (new pcl::PointCloud<PointNormal>);
+  ne.setRadiusSearch (scale2);
+  ne.compute (*normals_large_scale);
+//初始化点云便于后面输出
+PointCloud<PointNormal>::Ptr doncloud (new pcl::PointCloud<PointNormal>);
+  copyPointCloud (*cloud, *doncloud);
+//创建pcl::DifferenceOfNormalsEstimation来计算法线差
+pcl::DifferenceOfNormalsEstimation<PointXYZRGB, PointNormal, PointNormal> don;
+  don.setInputCloud (cloud);
+  don.setNormalScaleLarge (normals_large_scale);
+  don.setNormalScaleSmall (normals_small_scale);
+  if (!don.initCompute ())
+  {
+    std::cerr << "Error: Could not initialize DoN feature operator" << std::endl;
+    exit (EXIT_FAILURE);
+  }
+  // Compute DoN
+  don.computeFeature (*doncloud);
+```
+**将点云聚类为超素体**  
+1.什么是超体素：VCCS是一种3D点云数据种的像素，他们均匀的分布在3D空间中，使用八叉树结构来存储    
+2.代码  
+使用pcl::SupervoxelClustering，将点云聚类为超素体  
+VCCS是一种区域生长算法，以种子中心开始，以R为半径搜索相邻体素-->计算范围内体素的距离，颜色，法线特征-->做归一化处理
+```git
 
-
-
+```
+**使用 ProgressiveMorphologicalFilter 分割识别地面回波**  
+1.计算原理：使用的是渐进形态过滤器来分割地面点  
+2.代码：
+```git
+//创建pcl::ProgressiveMorphologicalFilter过滤器
+pcl::ProgressiveMorphologicalFilter<pcl::PointXYZ> pmf;
+  pmf.setInputCloud (cloud);
+  pmf.setMaxWindowSize (20);
+  pmf.setSlope (1.0f);
+  pmf.setInitialDistance (0.5f);
+  pmf.setMaxDistance (3.0f);
+  pmf.extract (ground->indices);
+//将索引传递给pcl::ExtractIndices 过滤器
+pcl::ExtractIndices<pcl::PointXYZ> extract;
+  extract.setInputCloud (cloud);
+  extract.setIndices (ground);
+  extract.filter (*cloud_filtered);
+//地面返回的内容被写入磁盘以供以后检查
+  pcl::PCDWriter writer;
+  writer.write<pcl::PointXYZ> ("samp11-utm_ground.pcd", *cloud_filtered, false);
+//使用相同参数的过滤器，获取非地面对象的返回
+extract.setNegative (true);
+  extract.filter (*cloud_filtered);
+```
 
