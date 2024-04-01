@@ -1125,7 +1125,7 @@ std::cerr << "Model coefficients: " << coefficients->values[0] << " "
 
 **圆柱体模型分割**  
 1.计算步骤：设置距离阈值范围-->计算每个点的法线-->保存平面模型，保存圆柱形模型  
-2.代码
+2.代码：  
 ```git
 //创建SACSegmentation对象，并设置圆柱体分割参数
 pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
@@ -1141,7 +1141,7 @@ pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 ```
 **基于欧几里得提取簇**  
 1.计算原理：本质是一种聚类方法，为点云创建kd树-->创建簇列表Q-->将点p加入到Q中，在pi的周围按半径r将点纳入簇中-->当Q中所有点都处理完毕，就将Q中的点全部添加簇C中，并将Q重置为空列表  
-2.代码  
+2.代码：  
 使用pcl::EuclideanClusterExtraction提取簇  
 ```git
 //创建KD树对象
@@ -1173,7 +1173,7 @@ int j = 0;
 **针对区域增长进行分割**  
 1.计算原理：使用的方法是使用点法线之间的角度进行聚类  
 计算每个点的曲率-->对曲率进行排序-->选取曲率值最小的点添加到种子集合中-->计算每个种子点找到邻近点-->计算每个邻近点法线和种子点法线之间的角度，如果小于阈值，则添加到簇-->计算每个邻近点曲率和种子点曲率之间的差值，如果曲率小于阈值，则添加到簇  
-2.代码：
+2.代码：  
 使用pcl::RegionGrowing 类实现区域增长过程中进行簇的计算  
 ```git
 //加载数据
@@ -1235,7 +1235,7 @@ std::vector <pcl::PointIndices> clusters;
 构建的点云图包含一组顶点，一组源点，一组汇点  
 构建的图中每一个顶点都通过边将源点和汇点连接起来  
 算法为每条边分配权重，权重分为3种类型：距离，背景惩罚，中心距离
-2.代码：
+2.代码：  
 使用pcl::MinCutSegmentation类  
 ```git
 //加载数据
@@ -1264,7 +1264,7 @@ std::vector <pcl::PointIndices> clusters;
 ```
 **有条件的欧几里得分割算法**  
 1.计算原理：该方法和之前的欧几里得聚类方法，区域生长分割方法，基于颜色的分割方法一样，使用了贪婪类/区域生长/洪水填充原理。与之前的方法相比该方法的优点是用户可以自定义聚类约束，如纯欧几里得，平滑度，RGB等。缺点是，没有初始种子系统，没有过度分段和欠分段控制，一次时间效率比较低。  
-2.代码
+2.代码  
 ```git
 //创建 pcl::ConditionalEuclideanClustering<PointTypeFull> cec (true);
 std::cerr << "Segmenting to clusters...\n", tt.tic ();
@@ -1323,7 +1323,7 @@ VCCS是一种区域生长算法，以种子中心开始，以R为半径搜索相
 ```
 **使用 ProgressiveMorphologicalFilter 分割识别地面回波**  
 1.计算原理：使用的是渐进形态过滤器来分割地面点  
-2.代码：
+2.代码：  
 ```git
 //创建pcl::ProgressiveMorphologicalFilter过滤器
 pcl::ProgressiveMorphologicalFilter<pcl::PointXYZ> pmf;
@@ -1347,7 +1347,7 @@ extract.setNegative (true);
 ```
 **使用 ModelOutlierRemoval 过滤点云**  
 1.计算原理：利用已知系数的 SAC_Model从点云中提取参数模型，例如已知是平面或者球体
-2.代码：
+2.代码：  
 ```git
 // position.x: 0, position.y: 0, position.z:0, radius: 1
   pcl::ModelCoefficients sphere_coeff;
