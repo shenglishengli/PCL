@@ -1103,6 +1103,44 @@ printf ("\n");
     visu.spin ();
 ```
 **如何使用随机样本构建模型**  
+**平面模型分割**  
+1.代码：
+```git
+//创建SACSegmentation对象，使用ransac寻找内点
+pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+  seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_PLANE);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setDistanceThreshold (0.01);
+  seg.setInputCloud (cloud);
+  seg.segment (*inliers, *coefficients);
+//使用内点拟合平面
+std::cerr << "Model coefficients: " << coefficients->values[0] << " " 
+                                      << coefficients->values[1] << " "
+                                      << coefficients->values[2] << " " 
+                                      << coefficients->values[3] << std::endl;
+```
+
+**圆柱体模型分割**  
+1.计算步骤：设置距离阈值范围-->计算每个点的法线-->保存平面模型，保存圆柱形模型  
+2.代码
+```git
+//创建SACSegmentation对象，并设置圆柱体分割参数
+pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  pcl::SACSegmentation<pcl::PointXYZ> seg;
+ seg.setOptimizeCoefficients (true);
+  seg.setModelType (pcl::SACMODEL_CYLINDER);
+  seg.setMethodType (pcl::SAC_RANSAC);
+  seg.setNormalDistanceWeight (0.1);
+  seg.setMaxIterations (10000);
+  seg.setDistanceThreshold (0.05);
+  seg.setRadiusLimits (0, 0.1);
+```
+
+
 
 
 
