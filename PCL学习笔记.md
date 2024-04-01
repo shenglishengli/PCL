@@ -1345,4 +1345,20 @@ pcl::ExtractIndices<pcl::PointXYZ> extract;
 extract.setNegative (true);
   extract.filter (*cloud_filtered);
 ```
+**使用 ModelOutlierRemoval 过滤点云**  
+1.计算原理：利用已知系数的 SAC_Model从点云中提取参数模型，例如已知是平面或者球体
+2.代码：
+```git
+// position.x: 0, position.y: 0, position.z:0, radius: 1
+  pcl::ModelCoefficients sphere_coeff;
+  sphere_coeff.values.resize (4);
+  sphere_coeff.values[0] = 0;
+  sphere_coeff.values[1] = 0;
+  sphere_coeff.values[2] = 0;
+  sphere_coeff.values[3] = 1;
 
+  pcl::ModelOutlierRemoval<pcl::PointXYZ> sphere_filter;
+  sphere_filter.setModelCoefficients (sphere_coeff);
+  sphere_filter.setThreshold (0.05);
+  sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
+```
