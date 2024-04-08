@@ -5,6 +5,7 @@ project(study_cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Qt5Core)
 find_package(PCL 1.8 REQUIRED)
