@@ -1364,10 +1364,13 @@ extract.setNegative (true);
 ```
 # 源码学习进度  
 **pcl-master/examples/common（完成）**  
-**pcl-master/examples/features 提取特征（完成）** 
+**pcl-master/examples/features 提取特征（完成）**   
 计算法线  
 计算曲率  
 计算直方图特征  
+计算rift特征  
+计算上下文形状特征  
+计算旋转图像特征  
 **pcl-master/examples/filter 点云过滤（完成）**  
 **pcl-master/examples/geometry  几何计算**  
 **pcl-master/examples/keypoints  提取关键点（完成）**  
