@@ -1363,12 +1363,19 @@ extract.setNegative (true);
   sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
 ```
 # 源码学习进度  
-pcl-master/examples/common（完成）  
-pcl-master/examples/features 提取特征（完成）  
-pcl-master/examples/filter 点云过滤（完成）  
-pcl-master/examples/geometry  几何计算  
-pcl-master/examples/keypoints  提取关键点
-pcl-master/examples/outofcore  
+**pcl-master/examples/common（完成）**  
+**pcl-master/examples/features 提取特征（完成）** 
+计算法线  
+计算曲率  
+计算直方图特征  
+**pcl-master/examples/filter 点云过滤（完成）**  
+**pcl-master/examples/geometry  几何计算**  
+**pcl-master/examples/keypoints  提取关键点（完成）**  
+利用HarrisKeypoint3D+XYZ+RGB提取关键点  
+利用SIFTKeypoint+XYZ+RGB提取关键点  
+利用SIFTKeypoint+XYZ+法线提取关键点  
+利用SIFTKeypoint+XYZ提取关键点  
+**pcl-master/examples/outofcore**  
 pcl-master/examples/segmentation  
 pcl-master/examples/stereo  
 pcl-master/examples/surface  
