@@ -110,7 +110,12 @@ Do you want to continue? [Y/n] y
 Setting up libvtk7-jni (7.1.1+dfsg1-2) ...
 Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
 ```
-
+安装完后在输入以下命令  
+https://blog.csdn.net/HelloJinYe/article/details/109105848
+```git
+sudo apt-get install aptitude
+sudo aptitude install libpcl-dev
+```
 # Linux下使用PCL
 **教程地址**  
 https://pcl.readthedocs.io/projects/tutorials/en/latest/  
