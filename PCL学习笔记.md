@@ -63,7 +63,7 @@ cd pcl
 mkdir build
 cd build
 cmake ..
-cmake -DON_NURBS=ON ..
+cmake -DON_NURBS=ON ..  （要开启DON_NURBS用于曲面拟合）
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
 sudo make -j2 install
