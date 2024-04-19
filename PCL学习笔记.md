@@ -63,6 +63,7 @@ cd pcl
 mkdir build
 cd build
 cmake ..
+cmake -DON_NURBS=ON ..
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
 sudo make -j2 install
