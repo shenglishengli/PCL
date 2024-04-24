@@ -67,6 +67,8 @@ cmake .. -DBUILD_surface_on_nurbs=ON （要开启DON_NURBS用于曲面拟合）
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j2
 sudo make -j2 install
+
+如果你不想使用Metslib（一个例子）或者找不到它，你可以修改PCL的CMakeLists.txt文件，注释掉或删除与Metslib相关的依赖项。这通常涉及到查找和替换文件中的metslib字样。
 ```
 如果cmake ..失败，是因为还需要下载依赖库
 ```git
