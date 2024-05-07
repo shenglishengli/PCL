@@ -52,7 +52,9 @@ PCL的点云可视化是基于VTK。VTK为渲染三维点云和表面数据提�
 3. 操作和抓取 <br>
 
 # Linux安装PCL  
-**环境**Oracle VM VirtualBox下安装ubuntu
+**环境**Oracle VM VirtualBox下安装ubuntu  
+**VirtualBox下载地址**https://www.virtualbox.org/wiki/Downloads  
+**Ubuntu下载地址**  
 **PCL官网下载地址**
 https://pointclouds.org/downloads/  
 **PCL官网Linux下安装教程**
